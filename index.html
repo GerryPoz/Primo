@@ -66,7 +66,7 @@
             // Aggiungi il valore selezionato al totale
             addButton.addEventListener('click', (event) => {
                 // Verifica se Alt+A è premuto
-                if (event.altKey && event.key === 'a') {
+                if (event.key === 'a') {
                     // Azzeramento totale
                     update(ref(database), {
                         '/total': 0
@@ -91,7 +91,7 @@
 
             // Aggiungi un listener globale per catturare la pressione di Alt+A
             document.addEventListener('keydown', (event) => {
-                if (event.altKey && event.key === 'a') {
+                if (event.key === 'a') {
                     event.preventDefault(); // Evita comportamenti indesiderati
                 }
             });
