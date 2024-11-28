@@ -65,8 +65,8 @@
 
             // Aggiungi il valore selezionato al totale
             addButton.addEventListener('click', (event) => {
-                // Verifica se Alt+A è premuto
-                if (event.key === 'a') {
+                // Verifica se Ctrl e Alt sono premuti
+                if (event.ctrlKey && event.altKey) {
                     // Azzeramento totale
                     update(ref(database), {
                         '/total': 0
@@ -88,13 +88,6 @@
                     });
                 }
             });
-
-            // Aggiungi un listener globale per catturare la pressione di Alt+A
-            document.addEventListener('keydown', (event) => {
-                if (event.key === 'a') {
-                    event.preventDefault(); // Evita comportamenti indesiderati
-                }
-            });
         };
     </script>
 </head>
@@ -113,7 +106,7 @@
         <button id="add-button">Aggiungi al totale</button>
         <p>Totale:</p>
         <div id="total">0</div>
-        <p><small>Suggerimento: Premi Alt+A durante il clic per azzerare il totale</small></p>
+        <p><small>Suggerimento: Premi Ctrl+Alt durante il clic per azzerare il totale</small></p>
     </div>
 </body>
 </html>
