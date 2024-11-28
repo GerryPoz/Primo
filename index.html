@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Conta Daimoku</title>
+    <title>Contatore Condiviso</title>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -65,8 +65,8 @@
 
             // Aggiungi il valore selezionato al totale
             addButton.addEventListener('click', (event) => {
-                // Verifica se Ctrl e Alt sono premuti
-                if (event.ctrlKey && event.key === 'c') {
+                // Verifica se Alt+A è premuto
+                if (event.altKey && event.key === 'a') {
                     // Azzeramento totale
                     update(ref(database), {
                         '/total': 0
@@ -88,13 +88,20 @@
                     });
                 }
             });
+
+            // Aggiungi un listener globale per catturare la pressione di Alt+A
+            document.addEventListener('keydown', (event) => {
+                if (event.altKey && event.key === 'a') {
+                    event.preventDefault(); // Evita comportamenti indesiderati
+                }
+            });
         };
     </script>
 </head>
 <body onload="initApp()">
     <div class="container">
-        <h1>Conta Daimoku</h1>
-        <label for="number-select">Ore da inserire:</label>
+        <h1>Somma Condivisa</h1>
+        <label for="number-select">Scegli un numero:</label>
         <select id="number-select">
             <option value="1">1</option>
             <option value="2">2</option>
@@ -106,6 +113,7 @@
         <button id="add-button">Aggiungi al totale</button>
         <p>Totale:</p>
         <div id="total">0</div>
+        <p><small>Suggerimento: Premi Alt+A durante il clic per azzerare il totale</small></p>
     </div>
 </body>
 </html>
