@@ -22,30 +22,65 @@
             padding: 10px;
             margin: 10px;
             font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
         }
-        #total {
-            font-size: 24px;
-            font-weight: bold;
+        .login-section, .admin-section {
+            display: none;
         }
-        .button-group {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-        #admin-section {
-            margin-top: 20px;
-            border-top: 1px solid #ccc;
-            padding-top: 20px;
-        }
-        #error-message {
+        .error-message {
             color: red;
             margin: 10px 0;
         }
     </style>
+</head>
+<body>
+    <div class="container">
+        <div id="login-section" class="login-section">
+            <h2>Login Amministratore</h2>
+            <input type="email" id="email-input" placeholder="Email">
+            <input type="password" id="password-input" placeholder="Password">
+            <button id="login-button">Accedi</button>
+            <div id="login-error" class="error-message"></div>
+        </div>
+
+        <div id="counter-section" style="display:none;">
+            <h1>Somma Condivisa</h1>
+            <label for="number-select">Scegli un numero:</label>
+            <select id="number-select">
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+            </select>
+            <br>
+            <button id="add-button">Aggiungi al totale</button>
+            <p>Totale:</p>
+            <div id="total">0</div>
+
+            <div id="admin-section" class="admin-section">
+                <h3>Area Amministratore</h3>
+                <button id="reset-button">Azzera Contatore</button>
+                <button id="logout-button">Esci</button>
+            </div>
+        </div>
+    </div>
+
     <script type="module">
         // Importa Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-        import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
+        import { 
+            getAuth, 
+            signInWithEmailAndPassword, 
+            signOut 
+        } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-auth.js';
+        import { 
+            getDatabase, 
+            ref, 
+            onValue, 
+            update 
+        } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 
         // Configurazione Firebase
         const firebaseConfig = {
@@ -60,95 +95,87 @@
 
         // Inizializza Firebase
         const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
         const database = getDatabase(app);
 
-        // Funzione per inizializzare l'interfaccia
-        window.initApp = function() {
-            const numberSelect = document.getElementById('number-select');
-            const addButton = document.getElementById('add-button');
-            const resetButton = document.getElementById('reset-button');
-            const adminPasswordInput = document.getElementById('admin-password');
-            const totalDisplay = document.getElementById('total');
-            const errorMessage = document.getElementById('error-message');
+        // Elementi DOM
+        const loginSection = document.getElementById('login-section');
+        const counterSection = document.getElementById('counter-section');
+        const adminSection = document.getElementById('admin-section');
+        const emailInput = document.getElementById('email-input');
+        const passwordInput = document.getElementById('password-input');
+        const loginButton = document.getElementById('login-button');
+        const loginError = document.getElementById('login-error');
+        const numberSelect = document.getElementById('number-select');
+        const addButton = document.getElementById('add-button');
+        const resetButton = document.getElementById('reset-button');
+        const logoutButton = document.getElementById('logout-button');
+        const totalDisplay = document.getElementById('total');
 
-            // Codice segreto per l'amministratore (dovresti cambiarlo!)
-            const ADMIN_PASSWORD = 'contatore2024';
+        // Funzione di login
+        loginButton.addEventListener('click', () => {
+            const email = emailInput.value;
+            const password = passwordInput.value;
 
-            // Riferimento al database
-            const totalRef = ref(database, 'total');
-
-            // Sincronizza il totale iniziale
-            onValue(totalRef, (snapshot) => {
-                const total = snapshot.val() || 0;
-                totalDisplay.textContent = total;
-            });
-
-            // Aggiungi il valore selezionato al totale
-            addButton.addEventListener('click', () => {
-                const selectedValue = parseInt(numberSelect.value);
-                
-                // Ottieni il riferimento al nodo total
-                const totalRef = ref(database, 'total');
-                
-                // Recupera il valore corrente
-                onValue(totalRef, (snapshot) => {
-                    const currentTotal = snapshot.val() || 0;
-                    const newTotal = currentTotal + selectedValue;
+            signInWithEmailAndPassword(auth, email, password)
+                .then((userCredential) => {
+                    // Login riuscito
+                    loginSection.style.display = 'none';
+                    counterSection.style.display = 'block';
                     
-                    // Aggiorna il valore
-                    update(ref(database), {
-                        '/total': newTotal
-                    });
-                }, {
-                    onlyOnce: true
+                    // Mostra sezione admin solo per email autorizzate
+                    const allowedAdmins = [
+                        'admin@example.com'  // Sostituisci con la tua email
+                    ];
+                    
+                    if (allowedAdmins.includes(userCredential.user.email)) {
+                        adminSection.style.display = 'block';
+                    }
+                })
+                .catch((error) => {
+                    // Gestione errori di login
+                    loginError.textContent = 'Credenziali non valide. Riprova.';
                 });
-            });
+        });
 
-            // Aggiungi funzionalità di reset con password
-            resetButton.addEventListener('click', () => {
-                // Pulisci il messaggio di errore
-                errorMessage.textContent = '';
-
-                // Verifica la password
-                if (adminPasswordInput.value === ADMIN_PASSWORD) {
-                    // Azzera il totale a 0
-                    update(ref(database), {
-                        '/total': 0
-                    });
-                    // Pulisci il campo password
-                    adminPasswordInput.value = '';
-                } else {
-                    // Mostra messaggio di errore
-                    errorMessage.textContent = 'Password amministratore errata!';
-                }
+        // Funzione di logout
+        logoutButton.addEventListener('click', () => {
+            signOut(auth).then(() => {
+                loginSection.style.display = 'block';
+                counterSection.style.display = 'none';
+                adminSection.style.display = 'none';
             });
-        };
+        });
+
+        // Sincronizzazione totale
+        const totalRef = ref(database, 'total');
+        onValue(totalRef, (snapshot) => {
+            const total = snapshot.val() || 0;
+            totalDisplay.textContent = total;
+        });
+
+        // Aggiunta al totale
+        addButton.addEventListener('click', () => {
+            const selectedValue = parseInt(numberSelect.value);
+            
+            onValue(totalRef, (snapshot) => {
+                const currentTotal = snapshot.val() || 0;
+                const newTotal = currentTotal + selectedValue;
+                
+                update(ref(database), {
+                    '/total': newTotal
+                });
+            }, {
+                onlyOnce: true
+            });
+        });
+
+        // Reset totale (solo per admin)
+        resetButton.addEventListener('click', () => {
+            update(ref(database), {
+                '/total': 0
+            });
+        });
     </script>
-</head>
-<body onload="initApp()">
-    <div class="container">
-        <h1>Somma Condivisa</h1>
-        <label for="number-select">Scegli un numero:</label>
-        <select id="number-select">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-        </select>
-        <br>
-        <div class="button-group">
-            <button id="add-button">Aggiungi al totale</button>
-        </div>
-        <p>Totale:</p>
-        <div id="total">0</div>
-
-        <div id="admin-section">
-            <h3>Area Amministratore</h3>
-            <input type="password" id="admin-password" placeholder="Password amministratore">
-            <button id="reset-button">Azzera Contatore</button>
-            <div id="error-message"></div>
-        </div>
-    </div>
 </body>
 </html>
