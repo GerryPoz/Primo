@@ -66,7 +66,7 @@
             // Aggiungi il valore selezionato al totale
             addButton.addEventListener('click', (event) => {
                 // Verifica se Ctrl e Alt sono premuti
-                if (event.ctrlKey && event.C) {
+                if (event.ctrlKey && event.key === 'c') {
                     // Azzeramento totale
                     update(ref(database), {
                         '/total': 0
