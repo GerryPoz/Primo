@@ -85,30 +85,21 @@
             addButton.addEventListener('click', (event) => {
                 const selectedValue = parseInt(numberSelect.value);
 
-                if (confirm("Sei sicuro di voler aggiornare il totale?")) {
-                    if (event.ctrlKey && event.altKey) {
-                        update(ref(database), {
-                            '/total': 0
-                        }).then(() => {
-                            totalDisplay.textContent = 0;
-                            sendEmail(0); // Invia l'email con il contatore azzerato
-                        });
-                    } else {
-                        onValue(totalRef, (snapshot) => {
-                            const currentTotal = snapshot.val() || 0;
-                            const newTotal = currentTotal + selectedValue;
+                onValue(totalRef, (snapshot) => {
+                    const currentTotal = snapshot.val() || 0;
+                    const newTotal = event.ctrlKey && event.altKey ? 0 : currentTotal + selectedValue;
 
-                            update(ref(database), {
-                                '/total': newTotal
-                            }).then(() => {
-                                // Dopo l'aggiornamento, invia l'email
-                                sendEmail(newTotal);
-                            });
-                        }, {
-                            onlyOnce: true
+                    if (confirm(`Sei sicuro di voler aggiornare il totale a ${newTotal}?`)) {
+                        update(ref(database), {
+                            '/total': newTotal
+                        }).then(() => {
+                            totalDisplay.textContent = newTotal;
+                            sendEmail(newTotal); // Invia l'email con il nuovo totale
                         });
                     }
-                }
+                }, {
+                    onlyOnce: true
+                });
             });
         };
     </script>
