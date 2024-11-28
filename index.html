@@ -18,7 +18,7 @@
             border-radius: 10px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
         }
-        select, button {
+        select, button, input {
             padding: 10px;
             margin: 10px;
             font-size: 16px;
@@ -26,6 +26,20 @@
         #total {
             font-size: 24px;
             font-weight: bold;
+        }
+        .button-group {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        #admin-section {
+            margin-top: 20px;
+            border-top: 1px solid #ccc;
+            padding-top: 20px;
+        }
+        #error-message {
+            color: red;
+            margin: 10px 0;
         }
     </style>
     <script type="module">
@@ -52,7 +66,13 @@
         window.initApp = function() {
             const numberSelect = document.getElementById('number-select');
             const addButton = document.getElementById('add-button');
+            const resetButton = document.getElementById('reset-button');
+            const adminPasswordInput = document.getElementById('admin-password');
             const totalDisplay = document.getElementById('total');
+            const errorMessage = document.getElementById('error-message');
+
+            // Codice segreto per l'amministratore (dovresti cambiarlo!)
+            const ADMIN_PASSWORD = 'contatore2024';
 
             // Riferimento al database
             const totalRef = ref(database, 'total');
@@ -83,6 +103,25 @@
                     onlyOnce: true
                 });
             });
+
+            // Aggiungi funzionalità di reset con password
+            resetButton.addEventListener('click', () => {
+                // Pulisci il messaggio di errore
+                errorMessage.textContent = '';
+
+                // Verifica la password
+                if (adminPasswordInput.value === ADMIN_PASSWORD) {
+                    // Azzera il totale a 0
+                    update(ref(database), {
+                        '/total': 0
+                    });
+                    // Pulisci il campo password
+                    adminPasswordInput.value = '';
+                } else {
+                    // Mostra messaggio di errore
+                    errorMessage.textContent = 'Password amministratore errata!';
+                }
+            });
         };
     </script>
 </head>
@@ -98,9 +137,18 @@
             <option value="5">5</option>
         </select>
         <br>
-        <button id="add-button">Aggiungi al totale</button>
+        <div class="button-group">
+            <button id="add-button">Aggiungi al totale</button>
+        </div>
         <p>Totale:</p>
         <div id="total">0</div>
+
+        <div id="admin-section">
+            <h3>Area Amministratore</h3>
+            <input type="password" id="admin-password" placeholder="Password amministratore">
+            <button id="reset-button">Azzera Contatore</button>
+            <div id="error-message"></div>
+        </div>
     </div>
 </body>
 </html>
