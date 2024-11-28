@@ -28,12 +28,35 @@
             font-weight: bold;
         }
     </style>
+    <!-- Script EmailJS -->
+    <script src="https://cdn.jsdelivr.net/npm/emailjs-com@2.4.1/dist/email.min.js"></script>
+    <script>
+        // Configura EmailJS
+        (function() {
+            emailjs.init("RcCnqMayoUy0x8WPZID2r"); // Sostituisci con il tuo User ID di EmailJS
+        })();
+        
+        // Funzione per inviare email
+        function sendEmail(total) {
+            const templateParams = {
+                to_email: "pliplomail@gmail.com",
+                message: `Il totale aggiornato è: ${total}`
+            };
+
+            emailjs.send('service_d5j2fpo', 'template_ub15o2y', templateParams)
+                .then((response) => {
+                    console.log('Email inviata con successo!', response.status, response.text);
+                    alert('Email inviata!');
+                }, (error) => {
+                    console.error('Errore nell\'invio dell\'email:', error);
+                    alert('Errore nell\'invio dell\'email.');
+                });
+        }
+    </script>
     <script type="module">
-        // Importa Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
         import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 
-        // Configurazione Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyD5iRlP5QiFEOn-kfirqBfHM7iaOGxt8Uk",
             authDomain: "contadaimoku-e1326.firebaseapp.com",
@@ -44,49 +67,37 @@
             appId: "1:63420585758:web:ebd0b61dae9e8c5b9c1b0f"
         };
 
-        // Inizializza Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Funzione per inizializzare l'interfaccia
         window.initApp = function() {
             const numberSelect = document.getElementById('number-select');
             const addButton = document.getElementById('add-button');
             const totalDisplay = document.getElementById('total');
 
-            // Riferimento al database
             const totalRef = ref(database, 'total');
 
-            // Sincronizza il totale iniziale
             onValue(totalRef, (snapshot) => {
                 const total = snapshot.val() || 0;
                 totalDisplay.textContent = total;
             });
 
-            // Aggiungi il valore selezionato al totale
-            addButton.addEventListener('click', (event) => {
-                // Verifica se Ctrl e Alt sono premuti
-                if (event.ctrlKey && event.altKey) {
-                    // Azzeramento totale
+            addButton.addEventListener('click', () => {
+                const selectedValue = parseInt(numberSelect.value);
+
+                onValue(totalRef, (snapshot) => {
+                    const currentTotal = snapshot.val() || 0;
+                    const newTotal = currentTotal + selectedValue;
+
                     update(ref(database), {
-                        '/total': 0
+                        '/total': newTotal
+                    }).then(() => {
+                        // Dopo l'aggiornamento, invia l'email
+                        sendEmail(newTotal);
                     });
-                } else {
-                    // Aggiungi il valore selezionato
-                    const selectedValue = parseInt(numberSelect.value);
-
-                    // Recupera il valore corrente e aggiorna
-                    onValue(totalRef, (snapshot) => {
-                        const currentTotal = snapshot.val() || 0;
-                        const newTotal = currentTotal + selectedValue;
-
-                        update(ref(database), {
-                            '/total': newTotal
-                        });
-                    }, {
-                        onlyOnce: true
-                    });
-                }
+                }, {
+                    onlyOnce: true
+                });
             });
         };
     </script>
