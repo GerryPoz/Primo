@@ -28,27 +28,10 @@
             font-weight: bold;
         }
     </style>
-</head>
-<body>
-    <div class="container">
-        <h1>Somma Condivisa</h1>
-        <label for="number-select">Scegli un numero:</label>
-        <select id="number-select">
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-            <option value="4">4</option>
-            <option value="5">5</option>
-        </select>
-        <br>
-        <button id="add-button">Aggiungi al totale</button>
-        <p>Totale:</p>
-        <div id="total">0</div>
-    </div>
-    
     <script type="module">
+        // Importa Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-        import { getDatabase, ref, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
+        import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 
         // Configurazione Firebase
         const firebaseConfig = {
@@ -65,29 +48,59 @@
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
 
-        // Elementi DOM
-        const numberSelect = document.getElementById('number-select');
-        const addButton = document.getElementById('add-button');
-        const totalDisplay = document.getElementById('total');
+        // Funzione per inizializzare l'interfaccia
+        window.initApp = function() {
+            const numberSelect = document.getElementById('number-select');
+            const addButton = document.getElementById('add-button');
+            const totalDisplay = document.getElementById('total');
 
-        // Riferimento al database
-        const totalRef = ref(database, 'total');
+            // Riferimento al database
+            const totalRef = ref(database, 'total');
 
-        // Sincronizza il totale iniziale
-        onValue(totalRef, (snapshot) => {
-            const total = snapshot.val() || 0;
-            totalDisplay.textContent = total;
-        });
-
-        // Aggiungi il valore selezionato al totale
-        addButton.addEventListener('click', () => {
-            const selectedValue = parseInt(numberSelect.value);
-            
-            // Usa runTransaction invece di transaction
-            runTransaction(totalRef, (currentTotal) => {
-                return (currentTotal || 0) + selectedValue;
+            // Sincronizza il totale iniziale
+            onValue(totalRef, (snapshot) => {
+                const total = snapshot.val() || 0;
+                totalDisplay.textContent = total;
             });
-        });
+
+            // Aggiungi il valore selezionato al totale
+            addButton.addEventListener('click', () => {
+                const selectedValue = parseInt(numberSelect.value);
+                
+                // Ottieni il riferimento al nodo total
+                const totalRef = ref(database, 'total');
+                
+                // Recupera il valore corrente
+                onValue(totalRef, (snapshot) => {
+                    const currentTotal = snapshot.val() || 0;
+                    const newTotal = currentTotal + selectedValue;
+                    
+                    // Aggiorna il valore
+                    update(ref(database), {
+                        '/total': newTotal
+                    });
+                }, {
+                    onlyOnce: true
+                });
+            });
+        };
     </script>
+</head>
+<body onload="initApp()">
+    <div class="container">
+        <h1>Somma Condivisa</h1>
+        <label for="number-select">Scegli un numero:</label>
+        <select id="number-select">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+        </select>
+        <br>
+        <button id="add-button">Aggiungi al totale</button>
+        <p>Totale:</p>
+        <div id="total">0</div>
+    </div>
 </body>
 </html>
