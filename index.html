@@ -32,7 +32,7 @@
         // Importa Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
         import { getDatabase, ref, onValue, update } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
-        
+
         // Configurazione Firebase
         const firebaseConfig = {
             apiKey: "AIzaSyD5iRlP5QiFEOn-kfirqBfHM7iaOGxt8Uk",
@@ -43,54 +43,48 @@
             messagingSenderId: "63420585758",
             appId: "1:63420585758:web:ebd0b61dae9e8c5b9c1b0f"
         };
-        
+
         // Inizializza Firebase
         const app = initializeApp(firebaseConfig);
         const database = getDatabase(app);
-        
+
         // Funzione per inizializzare l'interfaccia
         window.initApp = function() {
             const numberSelect = document.getElementById('number-select');
             const addButton = document.getElementById('add-button');
             const totalDisplay = document.getElementById('total');
-            
+
             // Riferimento al database
             const totalRef = ref(database, 'total');
-            
+
             // Sincronizza il totale iniziale
             onValue(totalRef, (snapshot) => {
                 const total = snapshot.val() || 0;
                 totalDisplay.textContent = total;
             });
-            
-            // Aggiungi il valore selezionato al totale
-            addButton.addEventListener('click', () => {
-                const selectedValue = parseInt(numberSelect.value);
-                
-                // Ottieni il riferimento al nodo total
-                const totalRef = ref(database, 'total');
-                
-                // Recupera il valore corrente
-                onValue(totalRef, (snapshot) => {
-                    const currentTotal = snapshot.val() || 0;
-                    const newTotal = currentTotal + selectedValue;
-                    
-                    // Aggiorna il valore
-                    update(ref(database), {
-                        '/total': newTotal
-                    });
-                }, {
-                    onlyOnce: true
-                });
-            });
 
-            // Aggiungi l'evento per l'azzeramento con Ctrl+Alt
-            document.addEventListener('keydown', (event) => {
-                // Verifica se sono premuti contemporaneamente Ctrl e Alt
+            // Aggiungi il valore selezionato al totale
+            addButton.addEventListener('click', (event) => {
+                // Verifica se Ctrl e Alt sono premuti
                 if (event.ctrlKey && event.altKey) {
-                    // Aggiorna il valore a 0 nel database
+                    // Azzeramento totale
                     update(ref(database), {
                         '/total': 0
+                    });
+                } else {
+                    // Aggiungi il valore selezionato
+                    const selectedValue = parseInt(numberSelect.value);
+
+                    // Recupera il valore corrente e aggiorna
+                    onValue(totalRef, (snapshot) => {
+                        const currentTotal = snapshot.val() || 0;
+                        const newTotal = currentTotal + selectedValue;
+
+                        update(ref(database), {
+                            '/total': newTotal
+                        });
+                    }, {
+                        onlyOnce: true
                     });
                 }
             });
@@ -112,7 +106,7 @@
         <button id="add-button">Aggiungi al totale</button>
         <p>Totale:</p>
         <div id="total">0</div>
-        <p><small>Suggerimento: Premi Ctrl+Alt per azzerare il totale</small></p>
+        <p><small>Suggerimento: Premi Ctrl+Alt durante il clic per azzerare il totale</small></p>
     </div>
 </body>
 </html>
