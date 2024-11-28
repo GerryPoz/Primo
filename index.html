@@ -5,7 +5,28 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contatore Condiviso</title>
     <style>
-        /* Il tuo stile CSS rimane invariato */
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            margin: 50px;
+        }
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        select, button {
+            padding: 10px;
+            margin: 10px;
+            font-size: 16px;
+        }
+        #total {
+            font-size: 24px;
+            font-weight: bold;
+        }
     </style>
 </head>
 <body>
@@ -26,9 +47,8 @@
     </div>
     
     <script type="module">
-        // Importa Firebase
         import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-app.js';
-        import { getDatabase, ref, onValue, transaction } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
+        import { getDatabase, ref, onValue, runTransaction } from 'https://www.gstatic.com/firebasejs/9.22.1/firebase-database.js';
 
         // Configurazione Firebase
         const firebaseConfig = {
@@ -62,7 +82,9 @@
         // Aggiungi il valore selezionato al totale
         addButton.addEventListener('click', () => {
             const selectedValue = parseInt(numberSelect.value);
-            transaction(totalRef, (currentTotal) => {
+            
+            // Usa runTransaction invece di transaction
+            runTransaction(totalRef, (currentTotal) => {
                 return (currentTotal || 0) + selectedValue;
             });
         });
