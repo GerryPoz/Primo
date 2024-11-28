@@ -49,7 +49,7 @@
                     alert('Email inviata!');
                 }, (error) => {
                     console.error('Errore nell\'invio dell\'email:', error);
-                    alert('Errore nell\'invio dell\'email.');
+                    alert('Errore nell\'invio dell\'email: ' + JSON.stringify(error));
                 });
         }
     </script>
