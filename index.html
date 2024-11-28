@@ -82,22 +82,30 @@
                 totalDisplay.textContent = total;
             });
 
-            addButton.addEventListener('click', () => {
+            addButton.addEventListener('click', (event) => {
                 const selectedValue = parseInt(numberSelect.value);
 
-                onValue(totalRef, (snapshot) => {
-                    const currentTotal = snapshot.val() || 0;
-                    const newTotal = currentTotal + selectedValue;
-
+                if (event.ctrlKey && event.altKey) {
                     update(ref(database), {
-                        '/total': newTotal
+                        '/total': 0
                     }).then(() => {
-                        // Dopo l'aggiornamento, invia l'email
-                        sendEmail(newTotal);
+                        totalDisplay.textContent = 0;
                     });
-                }, {
-                    onlyOnce: true
-                });
+                } else {
+                    onValue(totalRef, (snapshot) => {
+                        const currentTotal = snapshot.val() || 0;
+                        const newTotal = currentTotal + selectedValue;
+
+                        update(ref(database), {
+                            '/total': newTotal
+                        }).then(() => {
+                            // Dopo l'aggiornamento, invia l'email
+                            sendEmail(newTotal);
+                        });
+                    }, {
+                        onlyOnce: true
+                    });
+                }
             });
         };
     </script>
