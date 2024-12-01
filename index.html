@@ -89,7 +89,7 @@
 
                 onValue(totalRef, (snapshot) => {
                     const currentTotal = snapshot.val() || 0;
-                    const newTotal = event.ctrlKey && event.altKey ? 0 : currentTotal + selectedValue;
+                    const newTotal = currentTotal + selectedValue;
 
                     if (confirm(`Stai per aggiungere ${selectedValue} ore al totale. Vuoi continuare?`)) {
                         update(ref(database), {
